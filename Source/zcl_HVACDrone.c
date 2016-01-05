@@ -169,7 +169,7 @@ uint8 zclSampleLight_LevelLastLevel;  // to save the Current Level before the li
 /*********************************************************************
  * LOCAL FUNCTIONS
  */
-static void zclSampleLight_HandleKeys( byte shift, byte keys );
+//static void zclSampleLight_HandleKeys( byte shift, byte keys );
 static void zclSampleLight_BasicResetCB( void );
 static void zclSampleLight_IdentifyCB( zclIdentify_t *pCmd );
 static void zclSampleLight_IdentifyQueryRspCB( zclIdentifyQueryRsp_t *pRsp );
@@ -314,14 +314,6 @@ void zclSampleLight_Init( byte task_id )
   // Register for a test endpoint
   afRegister( &sampleLight_TestEp );
 
-#ifdef ZCL_EZMODE
-  // Register EZ-Mode
-  zcl_RegisterEZMode( &zclSampleLight_RegisterEZModeData );
-
-  // Register with the ZDO to receive Match Descriptor Responses
-  ZDO_RegisterForZDOMsg(task_id, Match_Desc_rsp);
-#endif
-
 
 #if (defined HAL_BOARD_ZLIGHT) || (defined HAL_PWM)
   HalTimer1Init( 0 );
@@ -385,19 +377,15 @@ uint16 zclSampleLight_event_loop( uint8 task_id, uint16 events )
     {
       switch ( MSGpkt->hdr.event )
       {
-#ifdef ZCL_EZMODE
-        case ZDO_CB_MSG:
-          zclSampleLight_ProcessZDOMsgs( (zdoIncomingMsg_t *)MSGpkt );
-          break;
-#endif
         case ZCL_INCOMING_MSG:
           // Incoming ZCL Foundation command/response messages
           zclSampleLight_ProcessIncomingMsg( (zclIncomingMsg_t *)MSGpkt );
           break;
 
-        case KEY_CHANGE:
-          zclSampleLight_HandleKeys( ((keyChange_t *)MSGpkt)->state, ((keyChange_t *)MSGpkt)->keys );
-          break;
+          
+        //case KEY_CHANGE:
+          //zclSampleLight_HandleKeys( ((keyChange_t *)MSGpkt)->state, ((keyChange_t *)MSGpkt)->keys );
+          //break;
 
         case ZDO_STATE_CHANGE:
           zclSampleLight_NwkState = (devStates_t)(MSGpkt->hdr.status);
@@ -516,7 +504,7 @@ uint16 zclSampleLight_event_loop( uint8 task_id, uint16 events )
  *
  * @return  none
  */
-static void zclSampleLight_HandleKeys( byte shift, byte keys )
+/*static void zclSampleLight_HandleKeys( byte shift, byte keys )
 {
   if ( keys & HAL_KEY_SW_1 )
   {
@@ -622,7 +610,7 @@ static void zclSampleLight_HandleKeys( byte shift, byte keys )
 
   // update the display, including the light
   zclSampleLight_LcdDisplayUpdate();
-}
+}*/
 
 /*********************************************************************
  * @fn      zclSampleLight_LcdDisplayUpdate
