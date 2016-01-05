@@ -142,33 +142,6 @@ uint8 zclSampleLightSeqNum;
  */
 afAddrType_t zclSampleLight_DstAddr;
 
-#ifdef ZCL_EZMODE
-static void zclSampleLight_ProcessZDOMsgs( zdoIncomingMsg_t *pMsg );
-static void zclSampleLight_EZModeCB( zlcEZMode_State_t state, zclEZMode_CBData_t *pData );
-
-
-// register EZ-Mode with task information (timeout events, callback, etc...)
-static const zclEZMode_RegisterData_t zclSampleLight_RegisterEZModeData =
-{
-  &zclSampleLight_TaskID,
-  SAMPLELIGHT_EZMODE_NEXTSTATE_EVT,
-  SAMPLELIGHT_EZMODE_TIMEOUT_EVT,
-  &zclSampleLightSeqNum,
-  zclSampleLight_EZModeCB
-};
-
-#else
-uint16 bindingInClusters[] =
-{
-  ZCL_CLUSTER_ID_GEN_ON_OFF
-#ifdef ZCL_LEVEL_CTRL
-  , ZCL_CLUSTER_ID_GEN_LEVEL_CONTROL
-#endif
-};
-#define ZCLSAMPLELIGHT_BINDINGLIST (sizeof(bindingInClusters) / sizeof(bindingInClusters[0]))
-
-#endif  // ZCL_EZMODE
-
 // Test Endpoint to allow SYS_APP_MSGs
 static endPointDesc_t sampleLight_TestEp =
 {
