@@ -2613,7 +2613,7 @@
         <option>
           <name>CCDefines</name>
           <state>SECURE=1</state>
-          <state>TC_LINKKEY_JOIN</state>
+          <state>xTC_LINKKEY_JOIN</state>
           <state>NV_INIT</state>
           <state>xNV_RESTORE</state>
           <state>xPOWER_SAVING</state>

@@ -292,64 +292,36 @@ void zclSampleLight_Init( byte task_id )
   zclSampleLight_DstAddr.addr.shortAddr = 0;
 
   // This app is part of the Home Automation Profile
-  zclHA_Init( &zclSampleLight_SimpleDesc );
+  //zclHA_Init( &zclSampleLight_SimpleDesc );
 
   // Register the ZCL General Cluster Library callback functions
-  zclGeneral_RegisterCmdCallbacks( SAMPLELIGHT_ENDPOINT, &zclSampleLight_CmdCallbacks );
+  //zclGeneral_RegisterCmdCallbacks( SAMPLELIGHT_ENDPOINT, &zclSampleLight_CmdCallbacks );
 
   // Register the application's attribute list
-  zcl_registerAttrList( SAMPLELIGHT_ENDPOINT, zclSampleLight_NumAttributes, zclSampleLight_Attrs );
+  //zcl_registerAttrList( SAMPLELIGHT_ENDPOINT, zclSampleLight_NumAttributes, zclSampleLight_Attrs );
 
   // Register the Application to receive the unprocessed Foundation command/response messages
-  zcl_registerForMsg( zclSampleLight_TaskID );
+  //zcl_registerForMsg( zclSampleLight_TaskID );
 
-#ifdef ZCL_DISCOVER
-  // Register the application's command list
-  zcl_registerCmdList( SAMPLELIGHT_ENDPOINT, zclCmdsArraySize, zclSampleLight_Cmds );
-#endif
 
   // Register for all key events - This app will handle all key events
-  RegisterForKeys( zclSampleLight_TaskID );
+  //RegisterForKeys( zclSampleLight_TaskID );
 
   // Register for a test endpoint
   afRegister( &sampleLight_TestEp );
 
-
+/*
 #if (defined HAL_BOARD_ZLIGHT) || (defined HAL_PWM)
   HalTimer1Init( 0 );
   halTimer1SetChannelDuty( WHITE_LED, 0 );
   halTimer1SetChannelDuty( RED_LED, 0 );
   halTimer1SetChannelDuty( BLUE_LED, 0 );
-  halTimer1SetChannelDuty( GREEN_LED, 0 );
+  halTimer1SetChannelDuty( GREEN_LED, 0 );*/
 
   // find if we are already on a network from NV_RESTORE
-  uint8 state;
-  NLME_GetRequest( nwkNwkState, 0, &state );
+  //uint8 state;
+  //NLME_GetRequest( nwkNwkState, 0, &state );
 
-  if ( state < NWK_ENDDEVICE )
-  {
-    // Start EZMode on Start up to avoid button press
-    osal_start_timerEx( zclSampleLight_TaskID, SAMPLELIGHT_START_EZMODE_EVT, 500 );
-  }
-#if ZCL_LEVEL_CTRL
-  zclSampleLight_DefaultMove();
-#endif
-#endif // #if (defined HAL_BOARD_ZLIGHT) || (defined HAL_PWM)
-
-#ifdef ZCL_DIAGNOSTIC
-  // Register the application's callback function to read/write attribute data.
-  // This is only required when the attribute data format is unknown to ZCL.
-  zcl_registerReadWriteCB( SAMPLELIGHT_ENDPOINT, zclDiagnostic_ReadWriteAttrCB, NULL );
-
-  if ( zclDiagnostic_InitStats() == ZSuccess )
-  {
-    // Here the user could start the timer to save Diagnostics to NV
-  }
-#endif
-
-#ifdef LCD_SUPPORTED
-  HalLcdWriteString ( (char *)sDeviceName, HAL_LCD_LINE_3 );
-#endif  // LCD_SUPPORTED
 
 #ifdef ZGP_AUTO_TT
   zgpTranslationTable_RegisterEP ( &zclSampleLight_SimpleDesc );
@@ -379,7 +351,7 @@ uint16 zclSampleLight_event_loop( uint8 task_id, uint16 events )
       {
         case ZCL_INCOMING_MSG:
           // Incoming ZCL Foundation command/response messages
-          zclSampleLight_ProcessIncomingMsg( (zclIncomingMsg_t *)MSGpkt );
+          //zclSampleLight_ProcessIncomingMsg( (zclIncomingMsg_t *)MSGpkt );
           break;
 
           
@@ -395,11 +367,7 @@ uint16 zclSampleLight_event_loop( uint8 task_id, uint16 events )
                (zclSampleLight_NwkState == DEV_ROUTER)   ||
                (zclSampleLight_NwkState == DEV_END_DEVICE) )
           {
-            giLightScreenMode = LIGHT_MAINMODE;
-            zclSampleLight_LcdDisplayUpdate();
-#ifdef ZCL_EZMODE
-            zcl_EZModeAction( EZMODE_ACTION_NETWORK_STARTED, NULL );
-#endif // ZCL_EZMODE
+
           }
           break;
 
@@ -414,7 +382,7 @@ uint16 zclSampleLight_event_loop( uint8 task_id, uint16 events )
     // return unprocessed events
     return (events ^ SYS_EVENT_MSG);
   }
-
+/*
   if ( events & SAMPLELIGHT_IDENTIFY_TIMEOUT_EVT )
   {
     if ( zclSampleLight_IdentifyTime > 0 )
@@ -430,61 +398,7 @@ uint16 zclSampleLight_event_loop( uint8 task_id, uint16 events )
     zclSampleLight_LcdDisplayUpdate();
 
     return ( events ^ SAMPLELIGHT_MAIN_SCREEN_EVT );
-  }
-
-#ifdef ZCL_EZMODE
-#if (defined HAL_BOARD_ZLIGHT)
-  // event to start EZMode on startup with a delay
-  if ( events & SAMPLELIGHT_START_EZMODE_EVT )
-  {
-    // Invoke EZ-Mode
-    zclEZMode_InvokeData_t ezModeData;
-
-    // Invoke EZ-Mode
-    ezModeData.endpoint = SAMPLELIGHT_ENDPOINT; // endpoint on which to invoke EZ-Mode
-    if ( (zclSampleLight_NwkState == DEV_ZB_COORD) ||
-         (zclSampleLight_NwkState == DEV_ROUTER)   ||
-         (zclSampleLight_NwkState == DEV_END_DEVICE) )
-    {
-      ezModeData.onNetwork = TRUE;      // node is already on the network
-    }
-    else
-    {
-      ezModeData.onNetwork = FALSE;     // node is not yet on the network
-    }
-    ezModeData.initiator = FALSE;          // OnOffLight is a target
-    ezModeData.numActiveOutClusters = 0;
-    ezModeData.pActiveOutClusterIDs = NULL;
-    ezModeData.numActiveInClusters = 0;
-    ezModeData.pActiveOutClusterIDs = NULL;
-    zcl_InvokeEZMode( &ezModeData );
-
-    return ( events ^ SAMPLELIGHT_START_EZMODE_EVT );
-  }
-#endif // #if (defined HAL_BOARD_ZLIGHT)
-
-  // going on to next state
-  if ( events & SAMPLELIGHT_EZMODE_NEXTSTATE_EVT )
-  {
-    zcl_EZModeAction ( EZMODE_ACTION_PROCESS, NULL );   // going on to next state
-    return ( events ^ SAMPLELIGHT_EZMODE_NEXTSTATE_EVT );
-  }
-
-  // the overall EZMode timer expired, so we timed out
-  if ( events & SAMPLELIGHT_EZMODE_TIMEOUT_EVT )
-  {
-    zcl_EZModeAction ( EZMODE_ACTION_TIMED_OUT, NULL ); // EZ-Mode timed out
-    return ( events ^ SAMPLELIGHT_EZMODE_TIMEOUT_EVT );
-  }
-#endif // ZLC_EZMODE
-
-#ifdef ZCL_LEVEL_CTRL
-  if ( events & SAMPLELIGHT_LEVEL_CTRL_EVT )
-  {
-    zclSampleLight_AdjustLightLevel();
-    return ( events ^ SAMPLELIGHT_LEVEL_CTRL_EVT );
-  }
-#endif
+  }*/
 
   // Discard unknown events
   return 0;
